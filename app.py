@@ -14,7 +14,6 @@ Source:
 '''
 
 from flask import Flask, render_template, request, make_response, jsonify
-
 import sqlite3
 from sqlite3 import Error
 import requests
@@ -22,21 +21,15 @@ from PIL import Image, ImageDraw, ImageFont
 import textwrap
 from redis import Redis
 import socket
-
 from datetime import timedelta
-
-
-
 from werkzeug.utils import secure_filename
 import os
 
 app = Flask(__name__)
-#6379
-redis = Redis(host='127.0.0.1', port=6379)
+redis = Redis(host='localhost', port=6379)
 
 MAX_HIT_COUNT = 5
 CACHE_EXPIRE_IN_MINUTES = 1
-
 
 database = 'test.db'
 
@@ -263,7 +256,7 @@ def api_base():
     return result
 
 
-''' redis implementation '''
+''' Max limit implementation for API requests'''
 
 def get_hit_count():
 
@@ -296,8 +289,6 @@ def get_ip():
 
     return ip
 
-
-
 '''
     http://127.0.0.1:5000/api/user
 '''
@@ -320,8 +311,7 @@ def api_user():
     return jsonify(result)
     
 
-
-'''ended redis '''
+''' Ended - Max limit implementation for API requests '''
 
 '''
     http://127.0.0.1:5000/api/student?name=gokul
