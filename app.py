@@ -14,7 +14,7 @@ Source:
 '''
 
 from flask import Flask, render_template, request, make_response
-from PyPDF2 import PdfFileReader,PdfFileWriter
+
 import sqlite3
 from sqlite3 import Error
 import requests
@@ -253,6 +253,20 @@ def api_base():
 
     return result
 
+
+'''
+    http://127.0.0.1:5000/api/user
+'''
+@app.route('/api/user')
+def api_user():
+    
+    result = {
+        'name' : 'vaish',
+        'city' : 'chennai'
+    }
+
+    return result
+
 '''
     http://127.0.0.1:5000/api/student?name=gokul
 '''
@@ -336,18 +350,7 @@ def show_pdf():
             print(filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             pdf_path="./static/uploads/{}".format(filename)
-            pdfFileObj = open(pdf_path, 'r')  
-            pdfReader = PdfFileReader(pdf_path)  
-            print(pdfReader.numPages)  
-            pageObj = pdfReader.getPage(0) 
-            s=[] 
-            s.append((pageObj.extractText()))
-            print("third print",s)
-            f=open('demo.txt','w')
-            for ele in s:
-                f.write(ele+'\n')
-            f.close()
-            pdfFileObj.close()
+            
             
     return render_template("show_pdf.html",pdf_path=pdf_path,error_msg=error_msg)
     
