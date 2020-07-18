@@ -13,13 +13,17 @@ Source:
     https://stackoverflow.com/questions/13279399/how-to-obtain-values-of-request-variables-using-python-and-flask
 '''
 
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, jsonify
 
 import sqlite3
 from sqlite3 import Error
 import requests
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
+from redis import Redis
+import socket
+
+from datetime import timedelta
 
 
 
@@ -27,6 +31,11 @@ from werkzeug.utils import secure_filename
 import os
 
 app = Flask(__name__)
+#6379
+redis = Redis(host='127.0.0.1', port=6379)
+
+MAX_HIT_COUNT = 5
+CACHE_EXPIRE_IN_MINUTES = 1
 
 
 database = 'test.db'
@@ -254,18 +263,65 @@ def api_base():
     return result
 
 
+''' redis implementation '''
+
+def get_hit_count():
+
+    current_ip = get_ip()
+
+    count_cached = redis.get(current_ip)
+    if(count_cached):
+        count_cached = int(count_cached.decode("utf-8"))
+    else:
+        count_cached = 0
+
+    if(count_cached >= MAX_HIT_COUNT):
+        return -1
+
+    count_cached += 1
+
+    # Set redis with expiry time
+    redis.setex(
+            current_ip, 
+            timedelta(minutes = CACHE_EXPIRE_IN_MINUTES),
+            value = count_cached
+        )
+
+    return count_cached
+
+def get_ip():
+
+    hostname = socket.gethostname()    
+    ip = socket.gethostbyname(hostname) 
+
+    return ip
+
+
+
 '''
     http://127.0.0.1:5000/api/user
 '''
 @app.route('/api/user')
 def api_user():
-    
-    result = {
-        'name' : 'vaish',
-        'city' : 'chennai'
+    count = get_hit_count()
+
+    if(count == -1):
+        result  = {
+            'error' : 'Maximum api request count reached !!!'
+        }
+
+        return make_response(jsonify(result),400)
+
+    result  = {
+        'name': 'demo',
+        'city': 'chennai'
     }
 
-    return result
+    return jsonify(result)
+    
+
+
+'''ended redis '''
 
 '''
     http://127.0.0.1:5000/api/student?name=gokul
