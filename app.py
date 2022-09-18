@@ -512,4 +512,4 @@ def meme_gen(img_path):
     return render_template("gen_meme.html",img_path=img_path)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0",port=5000,debug=True)
